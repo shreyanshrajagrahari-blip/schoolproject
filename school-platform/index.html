@@ -3,20 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1f4f9e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>School Smart Platform Prototype</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="hero">
-    <h1>School Smart Platform</h1>
-    <p>End-to-end prototype with role-based access, learning workflows, parent portal, finance tracking, and analytics.</p>
-  </header>
+  <div class="app-shell">
+    <aside class="app-nav">
+      <h2 class="app-nav-title" id="appNavTitle">School App</h2>
+      <button class="app-nav-btn active" type="button" data-screen-target="access">Access</button>
+      <button class="app-nav-btn" type="button" data-screen-target="profile">School</button>
+      <button class="app-nav-btn" type="button" data-screen-target="admin">Admin DB</button>
+      <button class="app-nav-btn" type="button" data-screen-target="quiz">Quiz</button>
+      <button class="app-nav-btn" type="button" data-screen-target="notice">Notices</button>
+      <button class="app-nav-btn" type="button" data-screen-target="forum">Forum</button>
+      <button class="app-nav-btn" type="button" data-screen-target="finance">Finance</button>
+      <button class="app-nav-btn" type="button" data-screen-target="archive">Archive</button>
+      <button class="app-nav-btn" type="button" data-screen-target="idcard">ID Card</button>
+      <button class="app-nav-btn" type="button" data-screen-target="operations">Operations</button>
+      <button class="app-nav-btn" type="button" data-screen-target="assignments">Assignments</button>
+      <button class="app-nav-btn" type="button" data-screen-target="parent">Parent</button>
+      <button class="app-nav-btn" type="button" data-screen-target="tools">Teacher Tools</button>
+      <button class="app-nav-btn" type="button" data-screen-target="analytics">Analytics</button>
+    </aside>
 
-  <main class="layout">
-    <section class="card auth-card">
+    <div class="app-main">
+      <header class="app-header">
+        <div class="app-header-brand">
+          <img id="schoolBrandLogo" src="icons/icon.svg" alt="School logo">
+          <div>
+            <h1 id="schoolBrandName">School Smart Platform</h1>
+            <p id="schoolBrandTagline">App-style dashboard with install support and mobile-first navigation.</p>
+          </div>
+        </div>
+        <div class="app-header-actions">
+          <button id="installAppBtn" type="button" class="ghost-btn" hidden>Install App</button>
+        </div>
+      </header>
+      <p id="installStatus" class="status tiny-note"></p>
+
+      <main class="layout screen-stack">
+    <section class="card feature-card app-screen" data-screen="profile" data-roles="Admin,Teacher,Student,Parent">
+      <h2>School Profile</h2>
+      <div id="schoolProfileDisplay"></div>
+
+      <h3>School Details (Admin/Teacher Update)</h3>
+      <div class="tool-grid">
+        <article class="tool">
+          <div class="grid-3">
+            <div>
+              <label for="schoolNameInput">School Name</label>
+              <input id="schoolNameInput" type="text" placeholder="Your school name">
+            </div>
+            <div>
+              <label for="schoolCodeInput">School Code</label>
+              <input id="schoolCodeInput" type="text" placeholder="SCH-001">
+            </div>
+            <div>
+              <label for="schoolAffiliationInput">Board/Affiliation</label>
+              <input id="schoolAffiliationInput" type="text" placeholder="NEB, CBSE, etc.">
+            </div>
+            <div>
+              <label for="schoolEstablishedInput">Established Year</label>
+              <input id="schoolEstablishedInput" type="text" placeholder="1998">
+            </div>
+            <div>
+              <label for="schoolSessionInput">Academic Session</label>
+              <input id="schoolSessionInput" type="text" placeholder="2082-2083">
+            </div>
+            <div>
+              <label for="schoolPrincipalInput">Principal</label>
+              <input id="schoolPrincipalInput" type="text" placeholder="Principal name">
+            </div>
+            <div>
+              <label for="schoolPhoneInput">Phone</label>
+              <input id="schoolPhoneInput" type="text" placeholder="+977-1-xxxxxxx">
+            </div>
+            <div>
+              <label for="schoolEmailInput">Email</label>
+              <input id="schoolEmailInput" type="email" placeholder="info@school.edu.np">
+            </div>
+            <div>
+              <label for="schoolWebsiteInput">Website</label>
+              <input id="schoolWebsiteInput" type="text" placeholder="https://school.edu.np">
+            </div>
+            <div>
+              <label for="schoolEmergencyInput">Emergency Contact</label>
+              <input id="schoolEmergencyInput" type="text" placeholder="+977-98xxxxxxxx">
+            </div>
+            <div>
+              <label for="schoolMottoInput">Motto</label>
+              <input id="schoolMottoInput" type="text" placeholder="Learning for life">
+            </div>
+            <div>
+              <label for="schoolLogoInput">School Logo</label>
+              <input id="schoolLogoInput" type="file" accept="image/*">
+            </div>
+          </div>
+          <label for="schoolAddressInput">Address</label>
+          <textarea id="schoolAddressInput" rows="2" placeholder="Full school address"></textarea>
+          <label for="schoolAboutInput">About School</label>
+          <textarea id="schoolAboutInput" rows="3" placeholder="Short introduction for app users"></textarea>
+          <div class="grid-2">
+            <button id="saveSchoolProfileBtn" type="button">Save School Profile</button>
+            <button id="resetSchoolProfileBtn" type="button" class="ghost-btn">Reset School Profile</button>
+          </div>
+          <p id="schoolProfileStatus" class="status"></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card auth-card app-screen screen-active" data-screen="access">
       <h2>Platform Access (Role-Based Login)</h2>
       <div class="grid-4">
         <div>
@@ -50,7 +155,7 @@
       <div id="roleHint" class="chip-wrap"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher">
+    <section class="card feature-card app-screen" data-screen="admin" data-roles="Admin,Teacher">
       <h2>Local Backend Database Console</h2>
       <p class="tiny-note">Persistent storage for notices, forum, moderation, attendance, timetable, assignments, submissions, payments, receipts, parent alerts, and student records.</p>
       <div class="grid-3">
@@ -65,7 +170,7 @@
       <div id="dbStats" class="code-panel"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="quiz" data-roles="Admin,Teacher,Student,Parent">
       <h2>1) Daily Quiz + Leaderboard</h2>
       <div class="grid-2">
         <div>
@@ -89,12 +194,12 @@
       <div id="leaderboardWrap"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="quiz" data-roles="Admin,Teacher,Student,Parent">
       <h2>2) Monthly Leaderboard News (Top 3 Streak)</h2>
       <div id="monthlyNews"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher">
+    <section class="card feature-card app-screen" data-screen="notice" data-roles="Admin,Teacher">
       <h2>3) Instant Notice / Invoice</h2>
       <div class="grid-3">
         <div>
@@ -137,7 +242,7 @@
       <div id="noticeFeed"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="forum" data-roles="Admin,Teacher,Student,Parent">
       <h2>4) Classroom Forum (Strict Language Filter)</h2>
       <div class="grid-2">
         <div>
@@ -162,21 +267,21 @@
       <div id="forumFeed"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher">
+    <section class="card feature-card app-screen" data-screen="forum" data-roles="Admin,Teacher">
       <h2>Forum Moderation Dashboard</h2>
       <p class="tiny-note">Blocked or flagged forum posts appear here for approve/reject action.</p>
       <p id="moderationStatus" class="status"></p>
       <div id="moderationWrap"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="finance" data-roles="Admin,Teacher,Student,Parent">
       <h2>5) Fees, Dues, Library Status</h2>
       <label for="studentSearch">Search by Student ID / Name / Class</label>
       <input id="studentSearch" type="text" placeholder="e.g. STU101">
       <div id="studentStatusWrap"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="finance" data-roles="Admin,Teacher,Student,Parent">
       <h2>Payment Integration + Receipts</h2>
       <div class="grid-4">
         <div>
@@ -207,14 +312,14 @@
       <div id="receiptWrap"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="archive" data-roles="Admin,Teacher,Student,Parent">
       <h2>6) Past Paper Archive</h2>
       <label for="paperFilter">Filter by Subject/Year</label>
       <input id="paperFilter" type="text" placeholder="e.g. Physics or 2080">
       <div id="paperArchive"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher">
+    <section class="card feature-card app-screen" data-screen="idcard" data-roles="Admin,Teacher">
       <h2>7) Digital ID Card Generator</h2>
       <div class="grid-3">
         <div>
@@ -246,7 +351,7 @@
       <div id="idCardPreview"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="operations" data-roles="Admin,Teacher,Student,Parent">
       <h2>Attendance + Timetable</h2>
       <div class="tool-grid">
         <article class="tool">
@@ -340,7 +445,7 @@
       </div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+    <section class="card feature-card app-screen" data-screen="assignments" data-roles="Admin,Teacher,Student,Parent">
       <h2>Assignment Workflow (Create, Submit, Grade)</h2>
       <div class="tool-grid">
         <article class="tool">
@@ -414,7 +519,7 @@
       <div id="submissionBoard"></div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Parent">
+    <section class="card feature-card app-screen" data-screen="parent" data-roles="Admin,Teacher,Parent">
       <h2>Parent Portal + Notifications</h2>
       <div class="tool-grid">
         <article class="tool">
@@ -451,7 +556,7 @@
       </div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher">
+    <section class="card feature-card app-screen" data-screen="tools" data-roles="Admin,Teacher">
       <h2>8) Teacher Tools</h2>
       <div class="tool-grid">
         <article class="tool">
@@ -493,7 +598,7 @@
       </div>
     </section>
 
-    <section class="card feature-card" data-roles="Admin,Teacher,Parent,Student">
+    <section class="card feature-card app-screen" data-screen="analytics" data-roles="Admin,Teacher,Parent,Student">
       <h2>Analytics & Reports</h2>
       <div class="grid-2">
         <button id="refreshAnalyticsBtn" type="button">Refresh Analytics</button>
@@ -503,6 +608,18 @@
       <div id="analyticsTable"></div>
     </section>
   </main>
+    </div>
+  </div>
+
+  <nav class="mobile-nav">
+    <button class="mobile-nav-btn active" type="button" data-screen-target="access">Access</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="profile">School</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="quiz">Quiz</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="forum">Forum</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="finance">Finance</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="assignments">Tasks</button>
+    <button class="mobile-nav-btn" type="button" data-screen-target="analytics">Stats</button>
+  </nav>
 
   <script src="script.js"></script>
 </body>

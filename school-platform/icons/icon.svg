@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">School Smart Platform</title>
+  <desc id="desc">Rounded app icon with book and graduation cap symbol.</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f6fed"/>
+      <stop offset="1" stop-color="#0f9d83"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="url(#g)"/>
+  <path d="M112 188l144-70 144 70-144 70-144-70zm38 50l106 52v88l-106-52v-88zm212 0v88l-106 52v-88l106-52z" fill="#ffffff"/>
+  <path d="M395 292c13 0 24 11 24 24v58h-20v-58c0-2-2-4-4-4s-4 2-4 4v58h-20v-58c0-13 11-24 24-24z" fill="#dff6ff"/>
+</svg>

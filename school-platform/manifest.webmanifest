@@ -1,0 +1,18 @@
+{
+  "name": "School Smart Platform",
+  "short_name": "SchoolApp",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f7ff",
+  "theme_color": "#1f4f9e",
+  "description": "App-style school platform with role-based access, operations, and analytics.",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

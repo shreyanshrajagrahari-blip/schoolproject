@@ -122,6 +122,27 @@ const QUIZ_SESSION_KEY = "school_suite_daily_sessions_v2"
 let idPhotoDataUrl = ""
 let appDb = loadDb()
 let authSession = loadAuthSession()
+let currentScreen = "access"
+let deferredInstallPrompt = null
+
+function getDefaultSchoolProfile() {
+  return {
+    name: "School Smart Platform",
+    code: "SCH-001",
+    affiliation: "National Education Board",
+    established: "2001",
+    session: "2082-2083",
+    principal: "Dr. A. Sharma",
+    phone: "+977-1-4000000",
+    email: "info@schoolsmart.edu.np",
+    website: "https://schoolsmart.edu.np",
+    emergency: "+977-98XXXXXXXX",
+    motto: "Learn, Lead, Serve",
+    address: "Kathmandu, Nepal",
+    about: "School Smart Platform is an integrated academic and student-service environment for modern schools.",
+    logoUrl: "icons/icon.svg"
+  }
+}
 
 const actionPermissions = {
   submitQuizBtn: ["Admin", "Teacher", "Student"],
@@ -139,6 +160,8 @@ const actionPermissions = {
   gradeAssignmentBtn: ["Admin", "Teacher"],
   payFeeBtn: ["Admin", "Teacher", "Student", "Parent"],
   linkParentBtn: ["Admin", "Teacher", "Parent"],
+  saveSchoolProfileBtn: ["Admin", "Teacher"],
+  resetSchoolProfileBtn: ["Admin", "Teacher"],
   exportDbBtn: ["Admin", "Teacher"],
   resetDbBtn: ["Admin", "Teacher"],
   refreshAnalyticsBtn: ["Admin", "Teacher", "Student", "Parent"],
@@ -234,6 +257,7 @@ function getDefaultDb() {
     version: 2,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    schoolProfile: getDefaultSchoolProfile(),
     studentRecords: deepClone(BASE_STUDENT_RECORDS),
     notices: [],
     forumPostsByClass: defaultForumMap(),
@@ -257,6 +281,10 @@ function normalizeDb(source) {
   const normalized = {
     ...base,
     ...db,
+    schoolProfile: {
+      ...getDefaultSchoolProfile(),
+      ...(db.schoolProfile && typeof db.schoolProfile === "object" ? db.schoolProfile : {})
+    },
     studentRecords: Array.isArray(db.studentRecords) && db.studentRecords.length ? db.studentRecords : base.studentRecords,
     notices: Array.isArray(db.notices) ? db.notices : [],
     moderationQueue: Array.isArray(db.moderationQueue) ? db.moderationQueue : [],
@@ -379,6 +407,81 @@ function setSelectOptions(id, options) {
   }
 }
 
+function getVisibleScreenNames() {
+  const sections = Array.from(document.querySelectorAll(".app-screen"))
+  const names = sections
+    .filter((section) => !section.classList.contains("hidden"))
+    .map((section) => section.dataset.screen)
+    .filter(Boolean)
+  return [...new Set(names)]
+}
+
+function ensureCurrentScreen() {
+  const visible = getVisibleScreenNames()
+  if (!visible.length) {
+    return
+  }
+
+  if (!visible.includes(currentScreen)) {
+    currentScreen = visible.includes("access") ? "access" : visible[0]
+  }
+}
+
+function renderScreenView() {
+  ensureCurrentScreen()
+
+  const visible = new Set(getVisibleScreenNames())
+  const sections = document.querySelectorAll(".app-screen")
+  sections.forEach((section) => {
+    const isAllowed = !section.classList.contains("hidden")
+    const isActiveScreen = section.dataset.screen === currentScreen
+    const shouldShow = isAllowed && isActiveScreen
+
+    section.classList.toggle("screen-active", shouldShow)
+    section.classList.toggle("screen-hidden", !shouldShow)
+  })
+
+  const navButtons = document.querySelectorAll("[data-screen-target]")
+  navButtons.forEach((button) => {
+    const target = button.dataset.screenTarget
+    const available = visible.has(target)
+
+    if (target !== "access") {
+      button.classList.toggle("hidden", !available)
+    }
+    button.classList.toggle("active", target === currentScreen)
+  })
+}
+
+function changeScreen(screenName, smooth = false) {
+  if (!screenName) {
+    return
+  }
+
+  currentScreen = screenName
+  renderScreenView()
+
+  const appMain = document.querySelector(".app-main")
+  if (appMain) {
+    appMain.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" })
+  }
+
+  if (smooth) {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  } else {
+    window.scrollTo({ top: 0 })
+  }
+}
+
+function handleScreenNavClick(event) {
+  const button = event.target.closest("[data-screen-target]")
+  if (!button) {
+    return
+  }
+
+  changeScreen(button.dataset.screenTarget, true)
+}
+
 function applyRoleVisibility() {
   const cards = document.querySelectorAll(".feature-card")
   cards.forEach((card) => {
@@ -390,6 +493,8 @@ function applyRoleVisibility() {
     const allowed = authSession ? roles.includes(authSession.role) : false
     card.classList.toggle("hidden", !allowed)
   })
+
+  renderScreenView()
 }
 
 function applyActionPermissions() {
@@ -408,6 +513,8 @@ function applyActionPermissions() {
   if (importFileInput) {
     importFileInput.disabled = !hasRole(["Admin", "Teacher"])
   }
+
+  setSchoolProfileFormAccess()
 }
 
 function renderRoleHint() {
@@ -431,6 +538,209 @@ function renderRoleHint() {
   wrap.innerHTML = roleFeatures[authSession.role]
     .map((item) => `<span class="chip">${escapeHtml(item)}</span>`)
     .join("")
+}
+
+function renderSchoolBranding() {
+  const profile = appDb.schoolProfile || getDefaultSchoolProfile()
+  const name = profile.name || "School Smart Platform"
+  const tagline = profile.motto || "Smart school management app"
+  const logoUrl = profile.logoUrl || "icons/icon.svg"
+
+  const titleEl = getEl("schoolBrandName")
+  if (titleEl) {
+    titleEl.textContent = name
+  }
+
+  const taglineEl = getEl("schoolBrandTagline")
+  if (taglineEl) {
+    taglineEl.textContent = `${tagline} | Session ${profile.session || "-"}`
+  }
+
+  const logoEl = getEl("schoolBrandLogo")
+  if (logoEl) {
+    logoEl.src = logoUrl
+  }
+
+  const navTitle = getEl("appNavTitle")
+  if (navTitle) {
+    navTitle.textContent = name
+  }
+
+  document.title = `${name} - Smart Platform`
+}
+
+function renderSchoolProfileForm() {
+  const profile = appDb.schoolProfile || getDefaultSchoolProfile()
+
+  getEl("schoolNameInput").value = profile.name || ""
+  getEl("schoolCodeInput").value = profile.code || ""
+  getEl("schoolAffiliationInput").value = profile.affiliation || ""
+  getEl("schoolEstablishedInput").value = profile.established || ""
+  getEl("schoolSessionInput").value = profile.session || ""
+  getEl("schoolPrincipalInput").value = profile.principal || ""
+  getEl("schoolPhoneInput").value = profile.phone || ""
+  getEl("schoolEmailInput").value = profile.email || ""
+  getEl("schoolWebsiteInput").value = profile.website || ""
+  getEl("schoolEmergencyInput").value = profile.emergency || ""
+  getEl("schoolMottoInput").value = profile.motto || ""
+  getEl("schoolAddressInput").value = profile.address || ""
+  getEl("schoolAboutInput").value = profile.about || ""
+}
+
+function setSchoolProfileFormAccess() {
+  const editable = hasRole(["Admin", "Teacher"])
+  const fieldIds = [
+    "schoolNameInput",
+    "schoolCodeInput",
+    "schoolAffiliationInput",
+    "schoolEstablishedInput",
+    "schoolSessionInput",
+    "schoolPrincipalInput",
+    "schoolPhoneInput",
+    "schoolEmailInput",
+    "schoolWebsiteInput",
+    "schoolEmergencyInput",
+    "schoolMottoInput",
+    "schoolAddressInput",
+    "schoolAboutInput",
+    "schoolLogoInput"
+  ]
+
+  fieldIds.forEach((id) => {
+    const el = getEl(id)
+    if (el) {
+      el.disabled = !editable
+    }
+  })
+}
+
+function renderSchoolProfileDisplay() {
+  const profile = appDb.schoolProfile || getDefaultSchoolProfile()
+  const website = (profile.website || "").trim()
+  const websiteLink = website
+    ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a>`
+    : "-"
+
+  getEl("schoolProfileDisplay").innerHTML = `
+    <div class="school-profile-head">
+      <img class="school-profile-logo" src="${escapeHtml(profile.logoUrl || "icons/icon.svg")}" alt="School logo">
+      <div>
+        <h3>${escapeHtml(profile.name || "-")}</h3>
+        <p>${escapeHtml(profile.motto || "-")}</p>
+        <small>${escapeHtml(profile.address || "-")}</small>
+      </div>
+    </div>
+    <div class="school-profile-grid">
+      <div class="school-info-item"><strong>School Code</strong><span>${escapeHtml(profile.code || "-")}</span></div>
+      <div class="school-info-item"><strong>Affiliation</strong><span>${escapeHtml(profile.affiliation || "-")}</span></div>
+      <div class="school-info-item"><strong>Established</strong><span>${escapeHtml(profile.established || "-")}</span></div>
+      <div class="school-info-item"><strong>Academic Session</strong><span>${escapeHtml(profile.session || "-")}</span></div>
+      <div class="school-info-item"><strong>Principal</strong><span>${escapeHtml(profile.principal || "-")}</span></div>
+      <div class="school-info-item"><strong>Phone</strong><span>${escapeHtml(profile.phone || "-")}</span></div>
+      <div class="school-info-item"><strong>Email</strong><span>${escapeHtml(profile.email || "-")}</span></div>
+      <div class="school-info-item"><strong>Website</strong><span>${websiteLink}</span></div>
+      <div class="school-info-item"><strong>Emergency</strong><span>${escapeHtml(profile.emergency || "-")}</span></div>
+    </div>
+    <div class="school-info-item">
+      <strong>About School</strong>
+      <p>${escapeHtml(profile.about || "-")}</p>
+    </div>
+  `
+}
+
+function saveSchoolProfile() {
+  if (!requireRole(["Admin", "Teacher"], "schoolProfileStatus")) {
+    return
+  }
+
+  const name = getEl("schoolNameInput").value.trim()
+  const email = getEl("schoolEmailInput").value.trim()
+  const website = getEl("schoolWebsiteInput").value.trim()
+
+  if (!name) {
+    setStatus("schoolProfileStatus", "School name is required.", true)
+    return
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setStatus("schoolProfileStatus", "Enter a valid school email address.", true)
+    return
+  }
+
+  if (website && !/^https?:\/\//i.test(website)) {
+    setStatus("schoolProfileStatus", "Website must start with http:// or https://", true)
+    return
+  }
+
+  appDb.schoolProfile = {
+    ...(appDb.schoolProfile || getDefaultSchoolProfile()),
+    name,
+    code: getEl("schoolCodeInput").value.trim(),
+    affiliation: getEl("schoolAffiliationInput").value.trim(),
+    established: getEl("schoolEstablishedInput").value.trim(),
+    session: getEl("schoolSessionInput").value.trim(),
+    principal: getEl("schoolPrincipalInput").value.trim(),
+    phone: getEl("schoolPhoneInput").value.trim(),
+    email,
+    website,
+    emergency: getEl("schoolEmergencyInput").value.trim(),
+    motto: getEl("schoolMottoInput").value.trim(),
+    address: getEl("schoolAddressInput").value.trim(),
+    about: getEl("schoolAboutInput").value.trim()
+  }
+
+  saveDb()
+  renderSchoolBranding()
+  renderSchoolProfileDisplay()
+  setStatus("schoolProfileStatus", "School profile saved.")
+}
+
+function resetSchoolProfile() {
+  if (!requireRole(["Admin", "Teacher"], "schoolProfileStatus")) {
+    return
+  }
+
+  appDb.schoolProfile = getDefaultSchoolProfile()
+  saveDb()
+  renderSchoolBranding()
+  renderSchoolProfileForm()
+  renderSchoolProfileDisplay()
+  setStatus("schoolProfileStatus", "School profile reset to default.")
+}
+
+function handleSchoolLogoSelection(event) {
+  if (!requireRole(["Admin", "Teacher"], "schoolProfileStatus")) {
+    event.target.value = ""
+    return
+  }
+
+  const file = event.target.files && event.target.files[0]
+  if (!file) {
+    return
+  }
+
+  if (!file.type.startsWith("image/")) {
+    setStatus("schoolProfileStatus", "Please upload a valid image file for logo.", true)
+    event.target.value = ""
+    return
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    setStatus("schoolProfileStatus", "Logo image must be below 2MB.", true)
+    event.target.value = ""
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    appDb.schoolProfile.logoUrl = String(reader.result || "")
+    saveDb()
+    renderSchoolBranding()
+    renderSchoolProfileDisplay()
+    setStatus("schoolProfileStatus", "School logo updated.")
+    event.target.value = ""
+  }
+  reader.readAsDataURL(file)
 }
 
 function autofillSessionFields() {
@@ -533,6 +843,63 @@ function handleLogout() {
   applyRoleVisibility()
   applyActionPermissions()
   renderAll()
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return
+  }
+
+  navigator.serviceWorker.register("./service-worker.js")
+    .catch(() => {
+      setStatus("installStatus", "Offline mode is unavailable in this browser.", true)
+    })
+}
+
+function setupInstallPrompt() {
+  const installBtn = getEl("installAppBtn")
+  if (!installBtn) {
+    return
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault()
+    deferredInstallPrompt = event
+    installBtn.hidden = false
+    setStatus("installStatus", "Install is ready. Tap 'Install App' for app mode.")
+  })
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null
+    installBtn.hidden = true
+    setStatus("installStatus", "School app installed successfully.")
+  })
+
+  const inStandalone = window.matchMedia("(display-mode: standalone)").matches
+  if (inStandalone) {
+    installBtn.hidden = true
+    setStatus("installStatus", "Running in installed app mode.")
+  } else {
+    setStatus("installStatus", "Tip: install this site to use it like a mobile app.")
+  }
+
+  installBtn.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) {
+      setStatus("installStatus", "Install prompt is not available yet in this browser.", true)
+      return
+    }
+
+    deferredInstallPrompt.prompt()
+    const choiceResult = await deferredInstallPrompt.userChoice
+    if (choiceResult.outcome === "accepted") {
+      setStatus("installStatus", "Install accepted. Finishing setup...")
+    } else {
+      setStatus("installStatus", "Install dismissed. You can install later anytime.", true)
+    }
+
+    deferredInstallPrompt = null
+    installBtn.hidden = true
+  })
 }
 
 function subjectDailyIndex(subject, dateKey) {
@@ -2310,6 +2677,7 @@ function renderDbStats() {
 
   const lines = [
     `Version: ${appDb.version}`,
+    `School: ${appDb.schoolProfile?.name || "-"}`,
     `Updated: ${appDb.updatedAt}`,
     `Students: ${appDb.studentRecords.length}`,
     `Notices: ${appDb.notices.length}`,
@@ -2409,6 +2777,9 @@ function resetDb() {
 }
 
 function renderAll() {
+  renderSchoolBranding()
+  renderSchoolProfileForm()
+  renderSchoolProfileDisplay()
   renderAuthStatus()
   renderRoleHint()
   autofillSessionFields()
@@ -2437,6 +2808,7 @@ function renderAll() {
 
   renderAnalytics()
   renderDbStats()
+  renderScreenView()
 }
 
 function init() {
@@ -2455,9 +2827,24 @@ function init() {
 
   populateClassSelects()
   renderAttendanceStudentOptions()
+  setupInstallPrompt()
+  registerServiceWorker()
+
+  const appNav = document.querySelector(".app-nav")
+  if (appNav) {
+    appNav.addEventListener("click", handleScreenNavClick)
+  }
+
+  const mobileNav = document.querySelector(".mobile-nav")
+  if (mobileNav) {
+    mobileNav.addEventListener("click", handleScreenNavClick)
+  }
 
   getEl("loginBtn").addEventListener("click", handleLogin)
   getEl("logoutBtn").addEventListener("click", handleLogout)
+  getEl("saveSchoolProfileBtn").addEventListener("click", saveSchoolProfile)
+  getEl("resetSchoolProfileBtn").addEventListener("click", resetSchoolProfile)
+  getEl("schoolLogoInput").addEventListener("change", handleSchoolLogoSelection)
 
   getEl("quizSubject").addEventListener("change", () => {
     renderQuiz()
