@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Smart Platform Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <h1>School Smart Platform</h1>
+    <p>End-to-end prototype with role-based access, learning workflows, parent portal, finance tracking, and analytics.</p>
+  </header>
+
+  <main class="layout">
+    <section class="card auth-card">
+      <h2>Platform Access (Role-Based Login)</h2>
+      <div class="grid-4">
+        <div>
+          <label for="authName">Name</label>
+          <input id="authName" type="text" placeholder="Enter your full name">
+        </div>
+        <div>
+          <label for="authRole">Role</label>
+          <select id="authRole">
+            <option value="">Select role</option>
+            <option value="Admin">Admin</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Student">Student</option>
+            <option value="Parent">Parent</option>
+          </select>
+        </div>
+        <div>
+          <label for="authStudentId">Linked Student ID (optional)</label>
+          <input id="authStudentId" type="text" placeholder="e.g. STU101">
+        </div>
+        <div>
+          <label for="authClass">Class (optional)</label>
+          <input id="authClass" type="text" placeholder="e.g. 12-A">
+        </div>
+      </div>
+      <div class="grid-2">
+        <button id="loginBtn" type="button">Login</button>
+        <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
+      </div>
+      <p id="authStatus" class="status"></p>
+      <div id="roleHint" class="chip-wrap"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher">
+      <h2>Local Backend Database Console</h2>
+      <p class="tiny-note">Persistent storage for notices, forum, moderation, attendance, timetable, assignments, submissions, payments, receipts, parent alerts, and student records.</p>
+      <div class="grid-3">
+        <button id="exportDbBtn" type="button">Export DB Backup</button>
+        <div>
+          <label for="importDbFile">Import DB Backup</label>
+          <input id="importDbFile" type="file" accept="application/json">
+        </div>
+        <button id="resetDbBtn" type="button" class="danger-btn">Reset Entire DB</button>
+      </div>
+      <p id="dbStatus" class="status"></p>
+      <div id="dbStats" class="code-panel"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>1) Daily Quiz + Leaderboard</h2>
+      <div class="grid-2">
+        <div>
+          <label for="quizStudent">Student Name</label>
+          <input id="quizStudent" type="text" placeholder="Enter name">
+        </div>
+        <div>
+          <label for="quizSubject">Subject</label>
+          <select id="quizSubject"></select>
+        </div>
+      </div>
+      <p id="quizToday" class="tiny-note"></p>
+
+      <div class="quiz-box" id="quizBox"></div>
+      <button id="submitQuizBtn" type="button">Submit Quiz</button>
+      <p id="quizStatus" class="status"></p>
+      <h3>Daily Session Tracker</h3>
+      <div id="dailySessionWrap"></div>
+
+      <h3>Leaderboard</h3>
+      <div id="leaderboardWrap"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>2) Monthly Leaderboard News (Top 3 Streak)</h2>
+      <div id="monthlyNews"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher">
+      <h2>3) Instant Notice / Invoice</h2>
+      <div class="grid-3">
+        <div>
+          <label for="noticeType">Type</label>
+          <select id="noticeType">
+            <option value="Notice">Notice</option>
+            <option value="Invoice">Invoice</option>
+          </select>
+        </div>
+        <div>
+          <label for="noticeTitle">Title</label>
+          <input id="noticeTitle" type="text" placeholder="Title">
+        </div>
+        <div>
+          <label for="noticeTo">Send To (Class / Student ID / All)</label>
+          <input id="noticeTo" type="text" placeholder="12-A or STU101 or All">
+        </div>
+      </div>
+      <label for="noticeBody">Message</label>
+      <textarea id="noticeBody" rows="3" placeholder="Write message..."></textarea>
+      <div class="grid-3">
+        <div>
+          <label for="soundType">Notification Sound</label>
+          <select id="soundType">
+            <option value="chime">Chime</option>
+            <option value="alert">Alert</option>
+            <option value="bell">Bell</option>
+            <option value="custom">Custom Tone Pattern</option>
+          </select>
+        </div>
+        <div>
+          <label for="customSound">Custom Pattern (Hz)</label>
+          <input id="customSound" type="text" placeholder="Example: 523,659,784">
+        </div>
+        <div class="align-end">
+          <button id="sendNoticeBtn" type="button">Send Instant Notice</button>
+        </div>
+      </div>
+      <p id="noticeStatus" class="status"></p>
+      <div id="noticeFeed"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>4) Classroom Forum (Strict Language Filter)</h2>
+      <div class="grid-2">
+        <div>
+          <label for="forumClass">Classroom</label>
+          <select id="forumClass">
+            <option value="12-A">12-A</option>
+            <option value="12-B">12-B</option>
+            <option value="11-A">11-A</option>
+            <option value="11-B">11-B</option>
+            <option value="10-A">10-A</option>
+          </select>
+        </div>
+        <div>
+          <label for="forumName">Name</label>
+          <input id="forumName" type="text" placeholder="Your name">
+        </div>
+      </div>
+      <label for="forumText">Message</label>
+      <textarea id="forumText" rows="3" placeholder="Ask doubt or academic discussion only"></textarea>
+      <button id="postForumBtn" type="button">Post in Forum</button>
+      <p id="forumStatus" class="status"></p>
+      <div id="forumFeed"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher">
+      <h2>Forum Moderation Dashboard</h2>
+      <p class="tiny-note">Blocked or flagged forum posts appear here for approve/reject action.</p>
+      <p id="moderationStatus" class="status"></p>
+      <div id="moderationWrap"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>5) Fees, Dues, Library Status</h2>
+      <label for="studentSearch">Search by Student ID / Name / Class</label>
+      <input id="studentSearch" type="text" placeholder="e.g. STU101">
+      <div id="studentStatusWrap"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>Payment Integration + Receipts</h2>
+      <div class="grid-4">
+        <div>
+          <label for="paymentStudentId">Student ID</label>
+          <input id="paymentStudentId" type="text" placeholder="STU101">
+        </div>
+        <div>
+          <label for="paymentAmount">Amount (NPR)</label>
+          <input id="paymentAmount" type="number" min="1" placeholder="1000">
+        </div>
+        <div>
+          <label for="paymentMethod">Method</label>
+          <select id="paymentMethod">
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cash Counter">Cash Counter</option>
+          </select>
+        </div>
+        <div>
+          <label for="paymentRef">Transaction Reference</label>
+          <input id="paymentRef" type="text" placeholder="Optional ref">
+        </div>
+      </div>
+      <button id="payFeeBtn" type="button">Pay Fees</button>
+      <p id="paymentStatus" class="status"></p>
+      <h3>Receipt History</h3>
+      <div id="receiptWrap"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>6) Past Paper Archive</h2>
+      <label for="paperFilter">Filter by Subject/Year</label>
+      <input id="paperFilter" type="text" placeholder="e.g. Physics or 2080">
+      <div id="paperArchive"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher">
+      <h2>7) Digital ID Card Generator</h2>
+      <div class="grid-3">
+        <div>
+          <label for="idName">Name</label>
+          <input id="idName" type="text">
+        </div>
+        <div>
+          <label for="idClass">Class</label>
+          <input id="idClass" type="text" placeholder="12-A">
+        </div>
+        <div>
+          <label for="idRoll">Roll No.</label>
+          <input id="idRoll" type="text">
+        </div>
+        <div>
+          <label for="idBlood">Blood Group</label>
+          <input id="idBlood" type="text" placeholder="O+">
+        </div>
+        <div>
+          <label for="idContact">Emergency Contact</label>
+          <input id="idContact" type="text">
+        </div>
+        <div>
+          <label for="idPhoto">Photo</label>
+          <input id="idPhoto" type="file" accept="image/*">
+        </div>
+      </div>
+      <button id="generateIdBtn" type="button">Generate ID Card</button>
+      <div id="idCardPreview"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>Attendance + Timetable</h2>
+      <div class="tool-grid">
+        <article class="tool">
+          <h3>Attendance</h3>
+          <div class="grid-2">
+            <div>
+              <label for="attDate">Date</label>
+              <input id="attDate" type="date">
+            </div>
+            <div>
+              <label for="attClass">Class</label>
+              <select id="attClass"></select>
+            </div>
+            <div>
+              <label for="attStudentId">Student</label>
+              <select id="attStudentId"></select>
+            </div>
+            <div>
+              <label for="attStatus">Status</label>
+              <select id="attStatus">
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Late">Late</option>
+              </select>
+            </div>
+          </div>
+          <button id="markAttendanceBtn" type="button">Mark Attendance</button>
+          <p id="attendanceStatus" class="status"></p>
+          <label for="attFilterClass">Filter Class</label>
+          <select id="attFilterClass"></select>
+          <div id="attendanceWrap"></div>
+        </article>
+
+        <article class="tool">
+          <h3>Timetable</h3>
+          <div class="grid-2">
+            <div>
+              <label for="ttClass">Class</label>
+              <select id="ttClass"></select>
+            </div>
+            <div>
+              <label for="ttDay">Day</label>
+              <select id="ttDay">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+            <div>
+              <label for="ttPeriod">Period</label>
+              <input id="ttPeriod" type="text" placeholder="P1">
+            </div>
+            <div>
+              <label for="ttSubject">Subject</label>
+              <input id="ttSubject" type="text" placeholder="Physics">
+            </div>
+            <div>
+              <label for="ttTeacher">Teacher</label>
+              <input id="ttTeacher" type="text" placeholder="Mr. Karki">
+            </div>
+            <div>
+              <label for="ttRoom">Room</label>
+              <input id="ttRoom" type="text" placeholder="R-204">
+            </div>
+          </div>
+          <button id="addTimetableBtn" type="button">Add Timetable Entry</button>
+          <p id="ttStatus" class="status"></p>
+          <div class="grid-2">
+            <div>
+              <label for="ttFilterClass">Filter Class</label>
+              <select id="ttFilterClass"></select>
+            </div>
+            <div>
+              <label for="ttFilterDay">Filter Day</label>
+              <select id="ttFilterDay">
+                <option value="">All Days</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+          </div>
+          <div id="timetableWrap"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Student,Parent">
+      <h2>Assignment Workflow (Create, Submit, Grade)</h2>
+      <div class="tool-grid">
+        <article class="tool">
+          <h3>Create Assignment</h3>
+          <label for="asgTitle">Title</label>
+          <input id="asgTitle" type="text">
+          <div class="grid-2">
+            <div>
+              <label for="asgSubject">Subject</label>
+              <input id="asgSubject" type="text" placeholder="Mathematics">
+            </div>
+            <div>
+              <label for="asgClass">Class</label>
+              <select id="asgClass"></select>
+            </div>
+            <div>
+              <label for="asgDue">Due Date</label>
+              <input id="asgDue" type="date">
+            </div>
+            <div>
+              <label for="asgMaxScore">Max Score</label>
+              <input id="asgMaxScore" type="number" min="1" value="20">
+            </div>
+          </div>
+          <label for="asgBody">Instructions</label>
+          <textarea id="asgBody" rows="3"></textarea>
+          <button id="createAssignmentBtn" type="button">Create Assignment</button>
+          <p id="asgCreateStatus" class="status"></p>
+        </article>
+
+        <article class="tool">
+          <h3>Submit Assignment</h3>
+          <div class="grid-2">
+            <div>
+              <label for="asgStudentId">Student ID</label>
+              <input id="asgStudentId" type="text" placeholder="STU101">
+            </div>
+            <div>
+              <label for="asgSelect">Assignment</label>
+              <select id="asgSelect"></select>
+            </div>
+          </div>
+          <label for="asgSubmissionText">Submission</label>
+          <textarea id="asgSubmissionText" rows="4" placeholder="Paste answer summary or submission text"></textarea>
+          <button id="submitAssignmentBtn" type="button">Submit Assignment</button>
+          <p id="asgSubmitStatus" class="status"></p>
+        </article>
+
+        <article class="tool">
+          <h3>Grade Submission</h3>
+          <label for="gradeSubmissionSelect">Submission</label>
+          <select id="gradeSubmissionSelect"></select>
+          <div class="grid-2">
+            <div>
+              <label for="gradeScore">Score</label>
+              <input id="gradeScore" type="number" min="0" placeholder="18">
+            </div>
+            <div>
+              <label for="gradeFeedback">Feedback</label>
+              <input id="gradeFeedback" type="text" placeholder="Good structure, check Q4">
+            </div>
+          </div>
+          <button id="gradeAssignmentBtn" type="button">Grade</button>
+          <p id="asgGradeStatus" class="status"></p>
+        </article>
+      </div>
+
+      <h3>Assignments Board</h3>
+      <div id="assignmentBoard"></div>
+      <h3>Submission Board</h3>
+      <div id="submissionBoard"></div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Parent">
+      <h2>Parent Portal + Notifications</h2>
+      <div class="tool-grid">
+        <article class="tool">
+          <h3>Link Parent to Student</h3>
+          <div class="grid-2">
+            <div>
+              <label for="parentName">Parent Name</label>
+              <input id="parentName" type="text" placeholder="Parent full name">
+            </div>
+            <div>
+              <label for="parentStudentId">Student ID</label>
+              <input id="parentStudentId" type="text" placeholder="STU101">
+            </div>
+            <div>
+              <label for="parentChannel">Channel</label>
+              <select id="parentChannel">
+                <option value="App Inbox">App Inbox</option>
+                <option value="SMS">SMS</option>
+                <option value="Email">Email</option>
+              </select>
+            </div>
+          </div>
+          <button id="linkParentBtn" type="button">Link Parent</button>
+          <p id="parentLinkStatus" class="status"></p>
+          <div id="parentLinkWrap"></div>
+        </article>
+
+        <article class="tool">
+          <h3>Notification Inbox</h3>
+          <label for="parentAlertStudentFilter">Filter by Student ID</label>
+          <input id="parentAlertStudentFilter" type="text" placeholder="Optional">
+          <div id="parentAlertWrap"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher">
+      <h2>8) Teacher Tools</h2>
+      <div class="tool-grid">
+        <article class="tool">
+          <h3>MCQ Maker Tool</h3>
+          <label for="mcqQuestion">Question</label>
+          <textarea id="mcqQuestion" rows="2"></textarea>
+          <div class="grid-2">
+            <div><label for="mcqA">Option A</label><input id="mcqA" type="text"></div>
+            <div><label for="mcqB">Option B</label><input id="mcqB" type="text"></div>
+            <div><label for="mcqC">Option C</label><input id="mcqC" type="text"></div>
+            <div><label for="mcqD">Option D</label><input id="mcqD" type="text"></div>
+          </div>
+          <label for="mcqCorrect">Correct Option (A/B/C/D)</label>
+          <input id="mcqCorrect" type="text" maxlength="1">
+          <button id="addMcqBtn" type="button">Add MCQ</button>
+          <button id="exportMcqBtn" type="button">Export MCQ Bank</button>
+          <p id="mcqStatus" class="status"></p>
+          <div id="mcqBank"></div>
+        </article>
+
+        <article class="tool">
+          <h3>OMR Evaluator</h3>
+          <label for="omrKey">Answer Key (example: ABCDA)</label>
+          <input id="omrKey" type="text">
+          <label for="omrStudent">Student Response</label>
+          <input id="omrStudent" type="text">
+          <button id="evalOmrBtn" type="button">Evaluate OMR</button>
+          <p id="omrResult" class="status"></p>
+        </article>
+
+        <article class="tool">
+          <h3>Word to LaTeX Converter</h3>
+          <label for="plainText">Plain Text / Math Text</label>
+          <textarea id="plainText" rows="4" placeholder="Example: sqrt(x^2 + y^2)"></textarea>
+          <button id="convertLatexBtn" type="button">Convert</button>
+          <label for="latexOut">LaTeX Output</label>
+          <textarea id="latexOut" rows="4" readonly></textarea>
+        </article>
+      </div>
+    </section>
+
+    <section class="card feature-card" data-roles="Admin,Teacher,Parent,Student">
+      <h2>Analytics & Reports</h2>
+      <div class="grid-2">
+        <button id="refreshAnalyticsBtn" type="button">Refresh Analytics</button>
+        <button id="exportAnalyticsBtn" type="button">Export Report (Print / PDF)</button>
+      </div>
+      <div id="analyticsSummary"></div>
+      <div id="analyticsTable"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
