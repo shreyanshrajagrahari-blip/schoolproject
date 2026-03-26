@@ -118,6 +118,7 @@ const DB_KEY = "school_suite_backend_db_v2"
 const AUTH_SESSION_KEY = "school_suite_auth_session_v1"
 const LEADERBOARD_KEY = "school_suite_leaderboard_v3"
 const QUIZ_SESSION_KEY = "school_suite_daily_sessions_v2"
+const DEFAULT_LOGO_URL = "icons/gbs-logo.png"
 
 let idPhotoDataUrl = ""
 let appDb = loadDb()
@@ -140,7 +141,7 @@ function getDefaultSchoolProfile() {
     motto: "Learn, Lead, Serve",
     address: "Kathmandu, Nepal",
     about: "School Smart Platform is an integrated academic and student-service environment for modern schools.",
-    logoUrl: "icons/icon.svg"
+    logoUrl: DEFAULT_LOGO_URL
   }
 }
 
@@ -305,6 +306,11 @@ function normalizeDb(source) {
       const posts = db.forumPostsByClass[cls]
       normalized.forumPostsByClass[cls] = Array.isArray(posts) ? posts : []
     })
+  }
+
+  const currentLogo = String(normalized.schoolProfile.logoUrl || "").trim()
+  if (!currentLogo || currentLogo === "icons/icon.svg") {
+    normalized.schoolProfile.logoUrl = DEFAULT_LOGO_URL
   }
 
   normalized.timetable = normalized.timetable.map((row) => ({
@@ -544,7 +550,7 @@ function renderSchoolBranding() {
   const profile = appDb.schoolProfile || getDefaultSchoolProfile()
   const name = profile.name || "School Smart Platform"
   const tagline = profile.motto || "Smart school management app"
-  const logoUrl = profile.logoUrl || "icons/icon.svg"
+  const logoUrl = profile.logoUrl || DEFAULT_LOGO_URL
 
   const titleEl = getEl("schoolBrandName")
   if (titleEl) {
@@ -559,6 +565,16 @@ function renderSchoolBranding() {
   const logoEl = getEl("schoolBrandLogo")
   if (logoEl) {
     logoEl.src = logoUrl
+  }
+
+  const faviconEl = getEl("appFavicon")
+  if (faviconEl) {
+    faviconEl.href = logoUrl
+  }
+
+  const appleIconEl = getEl("appAppleTouchIcon")
+  if (appleIconEl) {
+    appleIconEl.href = logoUrl
   }
 
   const navTitle = getEl("appNavTitle")
@@ -623,7 +639,7 @@ function renderSchoolProfileDisplay() {
 
   getEl("schoolProfileDisplay").innerHTML = `
     <div class="school-profile-head">
-      <img class="school-profile-logo" src="${escapeHtml(profile.logoUrl || "icons/icon.svg")}" alt="School logo">
+      <img class="school-profile-logo" src="${escapeHtml(profile.logoUrl || DEFAULT_LOGO_URL)}" alt="School logo">
       <div>
         <h3>${escapeHtml(profile.name || "-")}</h3>
         <p>${escapeHtml(profile.motto || "-")}</p>

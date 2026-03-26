@@ -1,11 +1,14 @@
-const CACHE_NAME = "school-smart-platform-pwa-v1"
+const CACHE_NAME = "school-smart-platform-pwa-v2"
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
   "./manifest.webmanifest",
-  "./icons/icon.svg"
+  "./icons/gbs-logo.png",
+  "./icons/app-icon-192.png",
+  "./icons/app-icon-512.png",
+  "./icons/apple-touch-icon.png"
 ]
 
 self.addEventListener("install", (event) => {
